@@ -9,8 +9,12 @@
   "routes": [
     {
       "src": "/mcp",
-      "dest": "/api/mcp",
+      "dest": "/api/mcp.ts",
       "methods": ["POST"]
+    },
+    {
+      "src": "/(.*)",
+      "status": 404
     }
   ],
   "env": {
