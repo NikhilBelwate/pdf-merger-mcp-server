@@ -58,15 +58,16 @@ async function runHttp() {
         await transport.handleRequest(req, res, req.body);
     });
     const port = parseInt(process.env.PORT ?? "4000", 10);
+    const host = process.env.HOST || "http://localhost";
     app.listen(port, () => {
-        console.error(`[pdf-merger-mcp] HTTP server on http://localhost:${port}/mcp`);
+        console.error(`[pdf-merger-mcp] HTTP server on ${host}:${port}/mcp`);
         console.error(`[pdf-merger-mcp] API target: ${API_BASE_URL}`);
     });
 }
 /* ------------------------------------------------------------------ */
 /*  Entry point                                                        */
 /* ------------------------------------------------------------------ */
-const transport = process.env.TRANSPORT ?? "http";
+const transport = process.env.TRANSPORT ?? "stdio";
 if (transport === "http") {
     runHttp().catch((err) => {
         console.error("[pdf-merger-mcp] Fatal:", err);

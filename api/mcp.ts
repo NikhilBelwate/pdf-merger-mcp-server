@@ -47,6 +47,41 @@ interface DeleteFileResponse {
 }
 
 // ================================================================
+// Zod Schemas for Tool Inputs
+// ================================================================
+
+const UploadPdfsInputSchema = z.object({
+  file_paths: z
+    .array(z.string().min(1))
+    .min(1)
+    .max(30)
+    .describe("Absolute paths to PDF files"),
+  session_id: z
+    .string()
+    .uuid()
+    .optional()
+    .describe("Optional existing session ID"),
+});
+
+const RemoveFileInputSchema = z.object({
+  session_id: z.string().uuid().describe("Session ID"),
+  file_id: z.string().uuid().describe("File ID"),
+});
+
+const MergePdfsInputSchema = z.object({
+  session_id: z.string().uuid().describe("Session ID"),
+  file_order: z
+    .array(z.string().uuid())
+    .min(2)
+    .max(30)
+    .describe("Ordered file IDs"),
+});
+
+const GetDownloadUrlInputSchema = z.object({
+  token: z.string().uuid().describe("Download token"),
+});
+
+// ================================================================
 // Shared utility functions
 // ================================================================
 
@@ -166,21 +201,7 @@ function createMcpServer(): McpServer {
     {
       title: "Upload PDFs",
       description: "Upload one or more PDF files to the PDF Merger service.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          file_paths: {
-            type: "array",
-            items: { type: "string" },
-            description: "Absolute paths to PDF files",
-          },
-          session_id: {
-            type: "string",
-            description: "Optional existing session ID",
-          },
-        },
-        required: ["file_paths"],
-      },
+      inputSchema: UploadPdfsInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -188,7 +209,7 @@ function createMcpServer(): McpServer {
         openWorldHint: true,
       },
     },
-    async (params: any) => {
+    async (params: z.infer<typeof UploadPdfsInputSchema>) => {
       try {
         const result = await uploadPdfs(
           params.file_paths,
@@ -197,7 +218,7 @@ function createMcpServer(): McpServer {
         if (!result.success) {
           return {
             isError: true,
-            content: [{ type: "text", text: `Upload failed: ${result.error}` }],
+            content: [{ type: "text" as const, text: `Upload failed: ${result.error}` }],
           };
         }
         const output = {
@@ -207,7 +228,7 @@ function createMcpServer(): McpServer {
         return {
           content: [
             {
-              type: "text",
+              type: "text" as const,
               text: `Uploaded ${output.files.length} file(s)`,
             },
           ],
@@ -216,7 +237,7 @@ function createMcpServer(): McpServer {
       } catch (error) {
         return {
           isError: true,
-          content: [{ type: "text", text: handleApiError(error) }],
+          content: [{ type: "text" as const, text: handleApiError(error) }],
         };
       }
     }
@@ -228,14 +249,7 @@ function createMcpServer(): McpServer {
     {
       title: "Remove File from Session",
       description: "Remove a PDF file from a session.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          session_id: { type: "string" },
-          file_id: { type: "string" },
-        },
-        required: ["session_id", "file_id"],
-      },
+      inputSchema: RemoveFileInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: true,
@@ -243,23 +257,23 @@ function createMcpServer(): McpServer {
         openWorldHint: true,
       },
     },
-    async (params: any) => {
+    async (params: z.infer<typeof RemoveFileInputSchema>) => {
       try {
         const result = await deleteFile(params.session_id, params.file_id);
         if (!result.success) {
           return {
             isError: true,
-            content: [{ type: "text", text: `Remove failed: ${result.error}` }],
+            content: [{ type: "text" as const, text: `Remove failed: ${result.error}` }],
           };
         }
         return {
-          content: [{ type: "text", text: "File removed" }],
+          content: [{ type: "text" as const, text: "File removed" }],
           structuredContent: { success: true },
         };
       } catch (error) {
         return {
           isError: true,
-          content: [{ type: "text", text: handleApiError(error) }],
+          content: [{ type: "text" as const, text: handleApiError(error) }],
         };
       }
     }
@@ -271,17 +285,7 @@ function createMcpServer(): McpServer {
     {
       title: "Merge PDFs",
       description: "Merge uploaded PDFs in specified order.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          session_id: { type: "string" },
-          file_order: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-        required: ["session_id", "file_order"],
-      },
+      inputSchema: MergePdfsInputSchema,
       annotations: {
         readOnlyHint: false,
         destructiveHint: false,
@@ -289,7 +293,7 @@ function createMcpServer(): McpServer {
         openWorldHint: true,
       },
     },
-    async (params: any) => {
+    async (params: z.infer<typeof MergePdfsInputSchema>) => {
       try {
         const result = await mergePdfs(
           params.session_id,
@@ -298,7 +302,7 @@ function createMcpServer(): McpServer {
         if (!result.success) {
           return {
             isError: true,
-            content: [{ type: "text", text: `Merge failed: ${result.error}` }],
+            content: [{ type: "text" as const, text: `Merge failed: ${result.error}` }],
           };
         }
         const output = {
@@ -310,7 +314,7 @@ function createMcpServer(): McpServer {
         return {
           content: [
             {
-              type: "text",
+              type: "text" as const,
               text: `Merge complete: ${output.page_count} pages, ${output.size_formatted}`,
             },
           ],
@@ -319,7 +323,7 @@ function createMcpServer(): McpServer {
       } catch (error) {
         return {
           isError: true,
-          content: [{ type: "text", text: handleApiError(error) }],
+          content: [{ type: "text" as const, text: handleApiError(error) }],
         };
       }
     }
@@ -331,13 +335,7 @@ function createMcpServer(): McpServer {
     {
       title: "Get Download URL",
       description: "Get the download URL for a merged PDF.",
-      inputSchema: {
-        type: "object",
-        properties: {
-          token: { type: "string" },
-        },
-        required: ["token"],
-      },
+      inputSchema: GetDownloadUrlInputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -345,10 +343,10 @@ function createMcpServer(): McpServer {
         openWorldHint: false,
       },
     },
-    async (params: any) => {
+    async (params: z.infer<typeof GetDownloadUrlInputSchema>) => {
       const urlStr = downloadUrl(params.token);
       return {
-        content: [{ type: "text", text: `Download URL: ${urlStr}` }],
+        content: [{ type: "text" as const, text: `Download URL: ${urlStr}` }],
         structuredContent: { download_url: urlStr },
       };
     }
