@@ -13,7 +13,7 @@
       }
     ],
     "env": {
-      "TRANSPORT": "http",
-      "PORT": "4000"
+      "PORT": "4000",
+      "TRANSPORT": "http"
     }
   }
