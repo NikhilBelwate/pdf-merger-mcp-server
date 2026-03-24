@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/mcp",
+      "dest": "/api/mcp",
+      "methods": ["POST"]
+    }
+  ],
+  "env": {
+    "PDF_MERGER_API_URL": "https://pdfmerger.omega-x.com",
+    "NODE_ENV": "production"
+  }
+}
