@@ -373,11 +373,12 @@ export default async function handler(
   try {
     const server = createMcpServer();
     const transport = new StreamableHTTPServerTransport({
-      sessionIdGenerator: undefined,
+      sessionIdGenerator: undefined, // disables session management
+    onsessioninitialized: undefined,
       enableJsonResponse: true,
     });
 
-    await server.connect(transport);
+    server.connect(transport);
     await transport.handleRequest(req, res, req.body);
   } catch (error) {
     console.error("MCP Handler Error:", error);
