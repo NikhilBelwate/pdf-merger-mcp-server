@@ -19,6 +19,7 @@
   ],
   "env": {
     "PDF_MERGER_API_URL": "https://pdfmerger.omega-x.com",
+    "PDF_SPLITTER_API_URL": "https://pdfsplitter.omega-x.com",
     "NODE_ENV": "production"
   }
 }

@@ -67,7 +67,7 @@ async function runHttp() {
 /* ------------------------------------------------------------------ */
 /*  Entry point                                                        */
 /* ------------------------------------------------------------------ */
-const transport = process.env.TRANSPORT ?? "stdio";
+const transport = process.env.TRANSPORT ?? "http";
 if (transport === "http") {
     runHttp().catch((err) => {
         console.error("[pdf-merger-mcp] Fatal:", err);
